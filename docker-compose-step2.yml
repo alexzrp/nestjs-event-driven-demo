@@ -53,7 +53,7 @@ services:
         max-file: "1"
 
   worker-default:
-    image: conf42-demo:latest
+    image: nestjs-event-driven-demo:latest
     deploy:
       mode: replicated
       replicas: 3
