@@ -28,11 +28,13 @@ export class CronService {
   async generate() {
     for (let i = 0; i < this.tradesPercycle; i++) {
       const uuid = randomUUID();
-      this.queue.add(JOB_ANALYTICS, { uuid });
-      this.queue.add(JOB_NOTIFICATION, { uuid });
-      this.queue.add(JOB_STORE, { uuid });
-      // this.queue.add(JOB_TRADE_CONFIRM, { uuid });
-      this.queueTrades.add(JOB_TRADE_CONFIRM, { uuid });
+      await Promise.all([
+        this.queue.add(JOB_ANALYTICS, { uuid }),
+        this.queue.add(JOB_NOTIFICATION, { uuid }),
+        this.queue.add(JOB_STORE, { uuid }),
+        // this.queue.add(JOB_TRADE_CONFIRM, { uuid }),
+        this.queueTrades.add(JOB_TRADE_CONFIRM, { uuid }),
+      ]);
       this.logger.log(`Trade ${uuid} created`);
     }
   }

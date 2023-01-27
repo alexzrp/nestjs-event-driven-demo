@@ -15,6 +15,8 @@ services:
       dockerfile: docker/Dockerfile
       target: builder
     image: nestjs-event-driven-demo:latest
+    depends_on:
+      - redis
     environment:
       - CONTAINER_ROLE=cron
       - REDIS_HOST=redis
@@ -28,6 +30,8 @@ services:
       dockerfile: docker/Dockerfile
       target: builder
     image: nestjs-event-driven-demo:latest
+    depends_on:
+      - redis
     environment:
       - CONTAINER_ROLE=worker
       - REDIS_HOST=redis
@@ -83,6 +87,16 @@ services:
       worker
     environment:
       - CONTAINER_ROLE=worker_default
+
+  redis-commander:
+    container_name: redis-commander
+    hostname: redis-commander
+    image: rediscommander/redis-commander:latest
+    restart: always
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    ports:
+      - "8081:8081"
 
 volumes:
   node:

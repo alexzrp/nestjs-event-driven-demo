@@ -1,7 +1,7 @@
 import { InjectQueue } from '@nestjs/bull';
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { Queue } from 'bull';
+import { JobOptions, Queue } from 'bull';
 import { randomUUID } from 'crypto';
 import {
   JOB_ANALYTICS,
@@ -22,12 +22,21 @@ export class CronService {
 
   @Cron(CronExpression.EVERY_SECOND)
   async generate() {
+    const jobOptions = <JobOptions>{
+      removeOnComplete: false,
+    };
     for (let i = 0; i < this.tradesPercycle; i++) {
       const uuid = randomUUID();
-      this.queue.add(JOB_ANALYTICS, { uuid });
-      this.queue.add(JOB_NOTIFICATION, { uuid });
-      this.queue.add(JOB_STORE, { uuid });
-      this.queue.add(JOB_TRADE_CONFIRM, { uuid });
+      await Promise.all([
+        this.queue.add(JOB_ANALYTICS, { uuid }, jobOptions),
+        this.queue.add(
+          JOB_NOTIFICATION,
+          { uuid },
+          { ...jobOptions, priority: 1 },
+        ),
+        this.queue.add(JOB_STORE, { uuid }, jobOptions),
+        this.queue.add(JOB_TRADE_CONFIRM, { uuid }, jobOptions),
+      ]);
       this.logger.log(`Trade ${uuid} created`);
     }
   }
