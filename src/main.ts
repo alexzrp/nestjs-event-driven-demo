@@ -5,7 +5,8 @@ import { AsyncApiDocumentBuilder, AsyncApiModule } from 'nestjs-asyncapi';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app/app.module';
-import { BullModule } from '@nestjs/bull';
+import yaml from 'yaml';
+import * as fs from 'fs';
 
 async function bootstrap() {
   const role = process.env.CONTAINER_ROLE;
@@ -49,6 +50,15 @@ async function bootstrap() {
         deepScanRoutes: true,
       },
     );
+    fs.writeFileSync('openapi.json', JSON.stringify(swaggerDocument, null, 2));
+    fs.writeFileSync(
+      'asyncapi.json',
+      JSON.stringify(asyncApiDocument, null, 2),
+    );
+
+    fs.writeFileSync('openapi.yaml', yaml.stringify(swaggerDocument));
+    fs.writeFileSync('asyncapi.yaml', yaml.stringify(asyncApiDocument));
+
     await AsyncApiModule.setup('docs/asyncapi', app, asyncApiDocument);
 
     return app.listen(3000);
