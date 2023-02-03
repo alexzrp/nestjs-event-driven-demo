@@ -1,5 +1,6 @@
 build:
 	docker build -t nestjs-event-driven-demo -f docker/Dockerfile .
+	docker compose run --rm app yarn install
 
 start:
 	docker compose up -d

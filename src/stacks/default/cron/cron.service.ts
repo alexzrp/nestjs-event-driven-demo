@@ -10,13 +10,14 @@ import {
   JOB_TRADE_CONFIRM,
   QUEUE_DEFAULT,
 } from '../../../common/const';
+import { CommonService } from '../../../common/common.service';
 
 @Injectable()
 export class CronService {
   protected readonly logger = new Logger(this.constructor.name);
   private readonly tradesPercycle: number;
 
-  constructor(@InjectQueue(QUEUE_DEFAULT) private queue: Queue) {
+  constructor(private commonService: CommonService) {
     this.tradesPercycle = 1;
   }
 
@@ -28,14 +29,13 @@ export class CronService {
     for (let i = 0; i < this.tradesPercycle; i++) {
       const uuid = randomUUID();
       await Promise.all([
-        this.queue.add(JOB_ANALYTICS, { uuid }, jobOptions),
-        this.queue.add(
-          JOB_NOTIFICATION,
+        this.commonService.addAnalytics({ uuid }, jobOptions),
+        this.commonService.addNotification(
           { uuid },
           { ...jobOptions, priority: 1 },
         ),
-        this.queue.add(JOB_STORE, { uuid }, jobOptions),
-        this.queue.add(JOB_TRADE_CONFIRM, { uuid }, jobOptions),
+        this.commonService.addStore({ uuid }, jobOptions),
+        this.commonService.addTrade({ uuid }, jobOptions),
       ]);
       this.logger.log(`Trade ${uuid} created`);
     }

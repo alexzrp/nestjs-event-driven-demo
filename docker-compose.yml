@@ -4,10 +4,22 @@ version: '3.8'
 services:
   redis:
     image: redis:7-alpine
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: builder
+    image: nestjs-event-driven-demo:latest
     ports:
-      - mode: host
-        published: 6379
-        target: 6379
+      - 3000:3000
+    depends_on:
+      - redis
+    environment:
+      - REDIS_HOST=redis
+    volumes:
+      - .:/app
+      - node:/app/node_modules
 
   cron:
     build:

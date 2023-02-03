@@ -2,6 +2,8 @@ import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { QUEUE_DEFAULT, QUEUE_TRADES } from './const';
+import { CommonService } from './common.service';
+import { CommonController } from './common.controller';
 
 @Module({
   imports: [
@@ -27,5 +29,7 @@ import { QUEUE_DEFAULT, QUEUE_TRADES } from './const';
     }),
   ],
   exports: [BullModule],
+  providers: [CommonService],
+  controllers: [CommonController],
 })
 export class CommonModule {}
