@@ -5,7 +5,7 @@ import { AsyncApiDocumentBuilder, AsyncApiModule } from 'nestjs-asyncapi';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app/app.module';
-import yaml from 'yaml';
+import * as YAML from 'yaml';
 import * as fs from 'fs';
 
 async function bootstrap() {
@@ -56,8 +56,10 @@ async function bootstrap() {
       JSON.stringify(asyncApiDocument, null, 2),
     );
 
-    fs.writeFileSync('openapi.yaml', yaml.stringify(swaggerDocument));
-    fs.writeFileSync('asyncapi.yaml', yaml.stringify(asyncApiDocument));
+    const yamlDocOpenapi = new YAML.Document(swaggerDocument);
+    const yamlDocAsyncapi = new YAML.Document(asyncApiDocument);
+    fs.writeFileSync('openapi.yaml', yamlDocOpenapi.toString());
+    fs.writeFileSync('asyncapi.yaml', yamlDocAsyncapi.toString());
 
     await AsyncApiModule.setup('docs/asyncapi', app, asyncApiDocument);
 

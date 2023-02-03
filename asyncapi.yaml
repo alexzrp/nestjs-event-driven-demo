@@ -1,0 +1,35 @@
+asyncapi: 2.5.0
+info:
+  title: Demo
+  description: Demo server description here
+  version: "1.0"
+  contact: {}
+tags: []
+servers:
+  demo:
+    protocol: redis
+    url: localhost
+    description: Demo Broker Server
+components:
+  schemas:
+    TradeCreatedDto:
+      type: object
+      properties:
+        uuid:
+          type: string
+          description: Trade identifier
+      required:
+        - uuid
+defaultContentType: application/json
+channels:
+  default/analytics:
+    subscribe:
+      message:
+        payload:
+          $ref: "#/components/schemas/TradeCreatedDto"
+        name: AppController#subAnalytics
+    publish:
+      message:
+        payload:
+          $ref: "#/components/schemas/TradeCreatedDto"
+        name: AppController#pubAnalytics
