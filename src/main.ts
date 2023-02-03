@@ -4,47 +4,55 @@ import { NestFactory } from '@nestjs/core';
 import { AsyncApiDocumentBuilder, AsyncApiModule } from 'nestjs-asyncapi';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { CommonModule } from './common/common.module';
+import { AppModule } from './app/app.module';
+import { BullModule } from '@nestjs/bull';
 
 async function bootstrap() {
   const role = process.env.CONTAINER_ROLE;
-  if (role) await rolesMapBootstrap[role]();
+  if (role) {
+    await rolesMapBootstrap[role]();
+    const logger = new Logger();
+    logger.log(`Container role: ${role}`);
+  } else {
+    const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  const app = await NestFactory.create<NestExpressApplication>(CommonModule);
+    const documentBuilderConfig = new DocumentBuilder()
+      .setTitle('Demo')
+      .setDescription('Demo OpenAPI')
+      .setVersion('1.0')
+      .build();
+    const swaggerDocument = SwaggerModule.createDocument(
+      app,
+      documentBuilderConfig,
+      {
+        deepScanRoutes: true,
+      },
+    );
+    SwaggerModule.setup('docs/openapi', app, swaggerDocument);
 
-  const documentBuilderConfig = new DocumentBuilder()
-    .setTitle('Demo')
-    .setDescription('Demo OpenAPI')
-    .setVersion('1.0')
-    .build();
-  const swaggerDocument = SwaggerModule.createDocument(
-    app,
-    documentBuilderConfig,
-    {
-      ignoreGlobalPrefix: false,
-      deepScanRoutes: true,
-    },
-  );
-  SwaggerModule.setup('docs/openapi', app, swaggerDocument);
+    const asyncApiOptions = new AsyncApiDocumentBuilder()
+      .setTitle('Demo')
+      .setDescription('Demo server description here')
+      .setVersion('1.0')
+      .setDefaultContentType('application/json')
+      .addServer('demo', {
+        protocol: 'redis',
+        url: 'localhost',
+        description: 'Demo Broker Server',
+      })
+      .build();
 
-  const asyncApiOptions = new AsyncApiDocumentBuilder()
-    .setTitle('Demo')
-    .setDescription('Demo server description here')
-    .setVersion('1.0')
-    .setDefaultContentType('application/json')
-    .addSecurity('user-password', { type: 'userPassword' })
-    .build();
+    const asyncApiDocument = await AsyncApiModule.createDocument(
+      app,
+      asyncApiOptions,
+      {
+        deepScanRoutes: true,
+      },
+    );
+    await AsyncApiModule.setup('docs/asyncapi', app, asyncApiDocument);
 
-  const asyncApiDocument = await AsyncApiModule.createDocument(
-    app,
-    asyncApiOptions,
-  );
-  await AsyncApiModule.setup('docs/asyncapi', app, asyncApiDocument);
-
-  const logger = new Logger();
-  logger.log(`Container role: ${role}`);
-
-  return app.listen(3000);
+    return app.listen(3000);
+  }
 }
 
 bootstrap();
