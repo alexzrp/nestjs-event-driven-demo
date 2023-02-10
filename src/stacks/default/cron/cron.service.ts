@@ -18,7 +18,7 @@ export class CronService {
     const jobOptions = <JobOptions>{
       removeOnComplete: false,
     };
-    for (let i = 0; i < this.tradesPercycle; i++) {
+    for (let i = 0; i < this.tradesPercycle + Math.round(Math.random()); i++) {
       const uuid = randomUUID();
       await Promise.all([
         this.commonService.addAnalytics({ uuid }, jobOptions),
