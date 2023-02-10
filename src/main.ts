@@ -8,6 +8,8 @@ import { AppModule } from './app/app.module';
 import * as YAML from 'yaml';
 import * as fs from 'fs';
 
+declare const module: any;
+
 async function bootstrap() {
   const role = process.env.CONTAINER_ROLE;
   if (role) {
@@ -19,6 +21,8 @@ async function bootstrap() {
       forceCloseConnections: true,
     });
     app.enableShutdownHooks();
+    app.setGlobalPrefix('api');
+    app.enableCors();
 
     const documentBuilderConfig = new DocumentBuilder()
       .setTitle('Demo')
@@ -68,6 +72,11 @@ async function bootstrap() {
 
     await app.listen(3000, '0.0.0.0');
     console.log(`Application is running on: ${await app.getUrl()}`);
+
+    if (module.hot) {
+      module.hot.accept();
+      module.hot.dispose(() => app.close());
+    }
   }
 }
 

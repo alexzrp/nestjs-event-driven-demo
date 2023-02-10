@@ -64,7 +64,7 @@
 
   chart.render();
 
-  const eventSource = new EventSource('/notification/sse');
+  const eventSource = new EventSource('/api/notification/sse');
 
   eventSource.onmessage = ({ data }) => {
     data = JSON.parse(data);

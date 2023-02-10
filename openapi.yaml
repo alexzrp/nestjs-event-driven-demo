@@ -1,20 +1,13 @@
 openapi: 3.0.0
 paths:
-  /notification:
-    get:
-      operationId: NotificationController_index
-      parameters: []
-      responses:
-        "200":
-          description: ""
-  /notification/sse:
+  /api/notification/sse:
     get:
       operationId: NotificationController_sse
       parameters: []
       responses:
         "200":
           description: ""
-  /app:
+  /api/app:
     post:
       operationId: AppController_pubAnalytics
       parameters: []

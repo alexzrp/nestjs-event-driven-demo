@@ -3,6 +3,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { CommonModule } from '../common/common.module';
 import { MonitorService } from './monitor.service';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { NotificationService } from '../notification/notification.service';
 
 @Module({
   imports: [
@@ -25,6 +26,6 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
       ignoreErrors: false,
     }),
   ],
-  providers: [MonitorService],
+  providers: [MonitorService, NotificationService],
 })
 export class MonitorModule {}

@@ -5,7 +5,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { Queue } from 'bull';
 import { QUEUE_DEFAULT, QUEUE_TRADES } from '../common/const';
 import Redis from 'ioredis';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import { NotificationService } from '../notification/notification.service';
 
 @Injectable()
 export class MonitorService {
@@ -15,7 +15,7 @@ export class MonitorService {
     @InjectQueue(QUEUE_DEFAULT) private queue: Queue,
     @InjectQueue(QUEUE_TRADES) private queueTrades: Queue,
     private readonly config: ConfigService,
-    private eventEmitter: EventEmitter2,
+    private readonly notificationService: NotificationService,
   ) {
     this.redis = new Redis({
       host: config.get('REDIS_HOST') || '127.0.0.1',
@@ -40,24 +40,26 @@ export class MonitorService {
         queue: QUEUE_DEFAULT,
         jobs_waiting: await this.queue.getWaitingCount(),
         jobs_completed: await this.queue.getCompletedCount(),
-        jobs_active: await this.queue.getActiveCount(),
+        jobs_delayed: await this.queue.getDelayedCount(),
         workers_count: workers_count_default,
       },
       {
         queue: QUEUE_TRADES,
         jobs_waiting: await this.queueTrades.getWaitingCount(),
         jobs_completed: await this.queueTrades.getCompletedCount(),
-        jobs_active: await this.queueTrades.getActiveCount(),
+        jobs_delayed: await this.queueTrades.getActiveCount(),
         workers_count: workers_count_trade,
       },
     ];
 
     const output = data.filter((d) => d.jobs_completed > 0);
 
-    console.clear();
-    console.table(output);
+    if (this.config.get('CONTAINER_ROLE')) {
+      console.clear();
+      console.table(output);
+    }
 
-    this.eventEmitter.emit('notification', output);
+    await this.notificationService.emit(output);
   }
 
   private async getWorkersCount(name: string) {
