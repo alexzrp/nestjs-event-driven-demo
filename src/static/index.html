@@ -72,6 +72,7 @@
   const eventSource = new EventSource('/api/notification/sse');
 
   eventSource.onmessage = (message) => {
+    console.log(message);
     const data = JSON.parse(message.data);
     data.forEach(d => {
       let serie = series.find(s => s.name===d.queue);
@@ -84,7 +85,7 @@
       }
       serie.data = [
         ...serie.data.slice(-10),
-        { x: message.timeStamp, y: d.jobs_waiting },
+        { x: new Date(), y: d.jobs_waiting },
       ];
 
       series = [...series.filter(s => s.name!==serie.name), serie];
