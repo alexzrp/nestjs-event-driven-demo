@@ -15,7 +15,10 @@ async function bootstrap() {
     const logger = new Logger();
     logger.log(`Container role: ${role}`);
   } else {
-    const app = await NestFactory.create<NestExpressApplication>(AppModule);
+    const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+      forceCloseConnections: true,
+    });
+    app.enableShutdownHooks();
 
     const documentBuilderConfig = new DocumentBuilder()
       .setTitle('Demo')
@@ -63,7 +66,8 @@ async function bootstrap() {
 
     await AsyncApiModule.setup('docs/asyncapi', app, asyncApiDocument);
 
-    return app.listen(3000);
+    await app.listen(3000, '0.0.0.0');
+    console.log(`Application is running on: ${await app.getUrl()}`);
   }
 }
 

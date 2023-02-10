@@ -1,0 +1,91 @@
+<style>
+    @import url('https://fonts.googleapis.com/css?family=Roboto');
+
+    body {
+        font-family: Roboto, sans-serif;
+    }
+
+    #chart {
+        max-width: 640px;
+        margin: 35px auto;
+    }
+
+</style>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<div id='chart'></div>
+<script type="text/javascript">
+  let series = [];
+  const options = {
+    chart: {
+      height: 500,
+      type: 'line',
+      animations: {
+        enabled: true,
+        easing: 'linear',
+        dynamicAnimation: {
+          speed: 1000
+        }
+      },
+      toolbar: {
+        show: false
+      },
+      zoom: {
+        enabled: false
+      }
+    },
+    dataLabels: {
+      enabled: false
+    },
+    series,
+    stroke: {
+      curve: 'smooth'
+    },
+    markers: {
+      size: 0
+    },
+    title: {
+      text: 'SSE Demo',
+    },
+    noData: {
+      text: 'Loading...'
+    },
+    xaxis: {
+      type: 'datetime',
+    },
+    legend: {
+      show: false
+    },
+  }
+
+  const chart = new ApexCharts(
+    document.querySelector("#chart"),
+    options
+  );
+
+  chart.render();
+
+  const eventSource = new EventSource('/notification/sse');
+
+  eventSource.onmessage = ({ data }) => {
+    data = JSON.parse(data);
+    data.forEach(d => {
+      let serie = series.find(s => s.name === d.queue);
+
+      if (!serie) {
+        serie = {
+          name: d.queue,
+          data: []
+        }
+      }
+      serie.data = [
+        ...serie.data.slice(-10),
+        { x: Date.now(), y: d.jobs_active}
+      ];
+
+      series = [...series.filter(s => s.name !== serie.name), serie];
+
+    })
+    chart.updateSeries(series);
+
+  }
+</script>

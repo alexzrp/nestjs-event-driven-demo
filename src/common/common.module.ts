@@ -3,7 +3,6 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { QUEUE_DEFAULT, QUEUE_TRADES } from './const';
 import { CommonService } from './common.service';
-import { TradeCreatedDto } from './dto/trade-created.dto';
 
 @Module({
   imports: [

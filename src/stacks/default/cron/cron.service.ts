@@ -1,15 +1,7 @@
-import { InjectQueue } from '@nestjs/bull';
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { JobOptions, Queue } from 'bull';
+import { JobOptions } from 'bull';
 import { randomUUID } from 'crypto';
-import {
-  JOB_ANALYTICS,
-  JOB_NOTIFICATION,
-  JOB_STORE,
-  JOB_TRADE_CONFIRM,
-  QUEUE_DEFAULT,
-} from '../../../common/const';
 import { CommonService } from '../../../common/common.service';
 
 @Injectable()
