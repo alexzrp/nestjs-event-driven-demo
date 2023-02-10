@@ -1,19 +1,24 @@
-<style>
-    @import url('https://fonts.googleapis.com/css?family=Roboto');
+<html lang='en'>
+<head>
+  <title>SSE Demo</title>
+  <style>
+      @import url('https://fonts.googleapis.com/css?family=Roboto');
 
-    body {
-        font-family: Roboto, sans-serif;
-    }
+      body {
+          font-family: Roboto, sans-serif;
+      }
 
-    #chart {
-        max-width: 640px;
-        margin: 35px auto;
-    }
+      #chart {
+          max-width: 640px;
+          margin: 35px auto;
+      }
 
-</style>
-<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+  </style>
+</head>
+<body>
 <div id='chart'></div>
-<script type="text/javascript">
+<script src='https://cdn.jsdelivr.net/npm/apexcharts'></script>
+<script type='text/javascript'>
   let series = [];
   const options = {
     chart: {
@@ -23,69 +28,72 @@
         enabled: false,
         easing: 'linear',
         dynamicAnimation: {
-          speed: 1000
-        }
+          speed: 1000,
+        },
       },
       toolbar: {
-        show: false
+        show: false,
       },
       zoom: {
-        enabled: false
-      }
+        enabled: false,
+      },
     },
     dataLabels: {
-      enabled: false
+      enabled: false,
     },
     series,
     stroke: {
-      curve: 'smooth'
+      curve: 'smooth',
     },
     markers: {
-      size: 0
+      size: 0,
     },
     title: {
       text: 'SSE Demo',
     },
     noData: {
-      text: 'Loading...'
+      text: 'Loading...',
     },
     xaxis: {
       type: 'datetime',
     },
     legend: {
-      show: false
+      show: false,
     },
-  }
+  };
 
   const chart = new ApexCharts(
-    document.querySelector("#chart"),
-    options
+    document.querySelector('#chart'),
+    options,
   );
 
   chart.render();
 
   const eventSource = new EventSource('/api/notification/sse');
 
-  eventSource.onmessage = ({ data }) => {
-    data = JSON.parse(data);
+  eventSource.onmessage = (message) => {
+    const data = JSON.parse(message.data);
     data.forEach(d => {
-      let serie = series.find(s => s.name === d.queue);
+      let serie = series.find(s => s.name===d.queue);
 
       if (!serie) {
         serie = {
           name: d.queue,
-          data: []
-        }
+          data: [],
+        };
       }
       serie.data = [
         ...serie.data.slice(-10),
-        { x: Date.now(), y: d.jobs_waiting}
+        { x: message.timeStamp, y: d.jobs_waiting },
       ];
 
-      series = [...series.filter(s => s.name !== serie.name), serie];
+      series = [...series.filter(s => s.name!==serie.name), serie];
 
-    })
+    });
     chart.updateSeries(series);
 
-  }
+  };
 </script>
+</body>
+</html>
+

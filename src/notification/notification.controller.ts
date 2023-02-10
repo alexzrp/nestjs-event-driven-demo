@@ -1,4 +1,4 @@
-import { Controller, Sse, Request } from '@nestjs/common';
+import { Controller, Sse } from '@nestjs/common';
 import { NotificationService } from './notification.service';
 
 @Controller('notification')
@@ -6,7 +6,7 @@ export class NotificationController {
   constructor(private notificationService: NotificationService) {}
 
   @Sse('sse')
-  sse(@Request() req) {
+  sse() {
     return this.notificationService.subscribe();
   }
 }
