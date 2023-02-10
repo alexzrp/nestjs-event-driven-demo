@@ -20,7 +20,7 @@
       height: 500,
       type: 'line',
       animations: {
-        enabled: true,
+        enabled: false,
         easing: 'linear',
         dynamicAnimation: {
           speed: 1000
@@ -79,7 +79,7 @@
       }
       serie.data = [
         ...serie.data.slice(-10),
-        { x: Date.now(), y: d.jobs_active}
+        { x: Date.now(), y: d.jobs_waiting}
       ];
 
       series = [...series.filter(s => s.name !== serie.name), serie];
