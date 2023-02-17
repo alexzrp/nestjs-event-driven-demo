@@ -31,8 +31,6 @@ services:
         reservations:
           cpus: '0.25'
           memory: 64M
-#    ports:
-#      - "6379:6379"
 
   app:
     profiles:
@@ -73,7 +71,7 @@ services:
           cpus: '0.1'
           memory: 512M
         reservations:
-          cpus: '0.25'
+          cpus: '0.05'
           memory: 64M
     depends_on:
       - redis
