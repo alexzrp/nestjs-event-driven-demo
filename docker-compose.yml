@@ -2,19 +2,54 @@
 version: '3.8'
 
 services:
+  nginx:
+    image: nginx:latest
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 100M
+        reservations:
+          cpus: '0.25'
+          memory: 64M
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - app
+    ports:
+      - "3000:3000"
+
   redis:
     image: redis:7-alpine
-    ports:
-      - 6379:6379
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 64M
+#    ports:
+#      - "6379:6379"
 
   app:
+    profiles:
+      - app
     build:
       context: .
       dockerfile: docker/Dockerfile
       target: builder
     image: nestjs-event-driven-demo:latest
-    ports:
-      - 3000:3000
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 64M
     depends_on:
       - redis
     environment:
@@ -24,11 +59,21 @@ services:
       - node:/app/node_modules
 
   cron:
+    profiles:
+      - cron
     build:
       context: .
       dockerfile: docker/Dockerfile
       target: builder
     image: nestjs-event-driven-demo:latest
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 64M
     depends_on:
       - redis
     environment:
@@ -39,11 +84,21 @@ services:
       - node:/app/node_modules
 
   worker:
+    profiles:
+      - worker
     build:
       context: .
       dockerfile: docker/Dockerfile
       target: builder
     image: nestjs-event-driven-demo:latest
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 64M
     depends_on:
       - redis
     environment:
@@ -52,55 +107,6 @@ services:
     volumes:
       - .:/app
       - node:/app/node_modules
-
-  cron-issue1:
-    profiles:
-      - issue1
-    extends:
-      cron
-    environment:
-      - CONTAINER_ROLE=cron_issue1
-
-  worker-step1:
-    profiles:
-      - step1
-    extends:
-      worker
-    environment:
-      - CONTAINER_ROLE=worker_1
-
-  cron-step1:
-    profiles:
-      - step1
-      - step2
-    extends:
-      cron
-    environment:
-      - CONTAINER_ROLE=cron_1
-
-  cron-step2:
-    profiles:
-      - step2
-    extends:
-      cron
-    environment:
-      - CONTAINER_ROLE=cron_1
-
-  worker-trade:
-    profiles:
-      - step2
-    extends:
-      worker
-    environment:
-      - CONTAINER_ROLE=worker_trade
-
-  worker-default:
-    profiles:
-      - step2
-    extends:
-      worker
-    environment:
-      - CONTAINER_ROLE=worker_default
 
   redis-commander:
     container_name: redis-commander

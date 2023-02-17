@@ -2,27 +2,37 @@ import { Logger } from '@nestjs/common';
 import { rolesMapBootstrap } from './container-role';
 import { NestFactory } from '@nestjs/core';
 import { AsyncApiDocumentBuilder, AsyncApiModule } from 'nestjs-asyncapi';
-import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app/app.module';
 import * as YAML from 'yaml';
 import * as fs from 'fs';
+import { Logger as PinoLogger } from 'nestjs-pino';
+import {
+  FastifyAdapter,
+  NestFastifyApplication,
+} from '@nestjs/platform-fastify';
 
 declare const module: any;
 
 async function bootstrap() {
+  const logger = new Logger();
   const role = process.env.CONTAINER_ROLE;
   if (role) {
     await rolesMapBootstrap[role]();
-    const logger = new Logger();
     logger.log(`Container role: ${role}`);
   } else {
-    const app = await NestFactory.create<NestExpressApplication>(AppModule, {
-      forceCloseConnections: true,
-    });
+    const app = await NestFactory.create<NestFastifyApplication>(
+      AppModule,
+      new FastifyAdapter(),
+      {
+        forceCloseConnections: true,
+        bufferLogs: true,
+      },
+    );
     app.enableShutdownHooks();
     app.setGlobalPrefix('api');
     app.enableCors();
+    app.useLogger(app.get(PinoLogger));
 
     const documentBuilderConfig = new DocumentBuilder()
       .setTitle('Demo')
@@ -71,7 +81,7 @@ async function bootstrap() {
     await AsyncApiModule.setup('docs/asyncapi', app, asyncApiDocument);
 
     await app.listen(3000, '0.0.0.0');
-    console.log(`Application is running on: ${await app.getUrl()}`);
+    logger.log(`Application is running on: ${await app.getUrl()}`);
 
     if (module.hot) {
       module.hot.accept();
