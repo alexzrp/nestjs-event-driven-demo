@@ -57,9 +57,9 @@ export class MonitorService {
     if (this.config.get('CONTAINER_ROLE')) {
       console.clear();
       console.table(output);
+    } else {
+      await this.notificationService.emit(output);
     }
-
-    await this.notificationService.emit(output);
   }
 
   private async getWorkersCount(name: string) {
